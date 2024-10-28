@@ -4,32 +4,41 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class GameSceneManager : MonoBehaviour
+namespace TapMaster
 {
-    public static GameSceneManager Instance { get; set; }
-    public GameObject popupWin;
-    public GameObject popupLose;
-    public Button deleteBtn;
-    private void Start()
+    public class GameSceneManager : MonoBehaviour
     {
-        Instance = this;
-    }
-    public void ResetMap()
-    {
-        LevelManager.Instance.CreateLevel();
-    }
+        public static GameSceneManager Instance { get; set; }
+        public GameObject popupWin;
+        public GameObject popupLose;
+        public Button deleteBtn;
+        private void Start()
+        {
+            Instance = this;
+        }
+        public void ResetMap()
+        {
+            LevelManager.Instance.ResetMap();
+        }
 
-    public void OnClickNextLevel()
-    {
-        popupWin.SetActive(false);
-        LevelManager.Instance.CreateLevelData();
-        LevelManager.Instance.SetTextLevel();
-        LevelManager.Instance.CreateLevel();
-    }
+        public void OnClickNextLevel()
+        {
+            popupWin.SetActive(false);
+            LevelManager.Instance.CreateLevelData();
+            LevelManager.Instance.SetTextLevel();
+            LevelManager.Instance.CreateLevel();
+        }
 
-    public void OnClickTryAgain()
-    {
-        popupLose.SetActive(false);
+        public void OnClickTryAgain()
+        {
+            popupLose.SetActive(false);
 
+        }
+
+        public void OnClickBackBtn()
+        {
+            Application.Quit();
+        }
     }
 }
+

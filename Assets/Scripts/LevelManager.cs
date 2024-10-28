@@ -3,85 +3,133 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 
-public class LevelManager : MonoBehaviour
+namespace TapMaster
 {
-    public static LevelManager Instance { get; private set; }
-    [Header("Level Detail")]
-    [SerializeField] private int currentLevel;
-    public int CurrentLevel { get => currentLevel; }
-    [SerializeField] int levelTarget;
-    public int LevelTarget { get => levelTarget; set => levelTarget = value; }
-
-    [SerializeField] private int countX;
-    public int CountX { get => countX; }
-    [SerializeField] private int countY;
-    public int CountY { get => countY; }
-    [SerializeField] int countZ;
-    public int CountZ { get => countZ; }
-    public TextMeshProUGUI levelTxt;
-
-    [SerializeField] bool isWin = false;
-
-    private void Start()
+    public class LevelManager : MonoBehaviour
     {
-        Instance = this;
-        currentLevel = 0;
-        SetTextLevel();
-        CreateLevel();
-    }
-    public void SetTextLevel()
-    {
-        int level = currentLevel;
-        levelTxt.text = "Level : " + level.ToString();
-    }
-    public void CreateLevel()
-    {
-        CreateLevelData();
-        CubeCtrl.Instance.SpawnCube();
-    }
+        public static LevelManager Instance { get; private set; }
+        [Header("Level Detail")]
+        [SerializeField] private int currentLevel;
+        public int CurrentLevel { get => currentLevel; }
+        [SerializeField] int levelTarget;
+        public int LevelTarget { get => levelTarget; set => levelTarget = value; }
 
-    public void CreateLevelData()
-    {
-        if(currentLevel == 0)
+        [SerializeField] private int countX;
+        public int CountX { get => countX; }
+        [SerializeField] private int countY;
+        public int CountY { get => countY; }
+        [SerializeField] int countZ;
+        public int CountZ { get => countZ; }
+
+        [SerializeField] int spellAmount;
+        public int SpellAmount { get => spellAmount; set => spellAmount= value; }
+
+
+        public TextMeshProUGUI levelTxt;
+        public TextMeshProUGUI spellAmountTxt;
+
+
+        [SerializeField] bool isWin = false;
+
+        private void Start()
         {
-            countX = 6;
-            countY = 6;
-            countZ = 6;
+            Instance = this;
+            currentLevel = 0;
+            SetTextLevel();
+            CreateLevel();
+            SetTextSpellAmount();
         }
-        else if(currentLevel <= 10)
+        public void SetTextLevel()
         {
-            countX = RandomValue(1, 3);
-            countY = RandomValue(1, 3);
-            countZ = RandomValue(1, 3);
-        }
-        else
-        {
-            countX = RandomValue(3, 6);
-            countY = RandomValue(3, 6);
-            countZ = RandomValue(3, 6);
+            int level = currentLevel;
+            levelTxt.text = "Level : " + level.ToString();
         }
 
-        levelTarget = countX * countY * countZ; 
-    }
-
-    public int RandomValue(int start, int end)
-    {
-        return Random.Range(start, end);
-    }
-
-
-    public void CheckWin()
-    {
-        if(levelTarget <= 0)
-            isWin = true;
-        if (isWin)
+        public void SetTextSpellAmount()
         {
-            GameSceneManager.Instance.popupWin.SetActive(true);
-            currentLevel++;
-            isWin = false;
+            int amount = spellAmount;
+            spellAmountTxt.text = "Remaining: " + amount.ToString();
         }
-        else return;
-    }
 
+        public void CreateLevel()
+        {
+            CreateLevelData();
+            CubeCtrl.Instance.SpawnCube();
+            SetTextSpellAmount();
+        }
+
+
+        public void ResetMap()
+        {
+            levelTarget = countX * countY * countZ;
+
+            if (levelTarget >= 150)
+                spellAmount = 2;
+            else spellAmount = 1;
+            CubeCtrl.Instance.SpawnCube();
+            SetTextSpellAmount();
+        }
+
+        public void CreateLevelData()
+        {
+            if(currentLevel == 0)
+            {
+                countX = 2;
+                countY = 1;
+                countZ = 2;
+            }
+            else if(currentLevel <= 10)
+            {
+                countX = RandomValue(2, 3);
+                countY = RandomValue(2, 3);
+                countZ = RandomValue(2, 4);
+            }
+            else if(currentLevel <= 30)
+            {
+                countX = RandomValue(3, 6);
+                countY = RandomValue(3, 6);
+                countZ = RandomValue(3, 6);
+            }
+            else if(currentLevel <= 70)
+            {
+                countX = RandomValue(5, 6);
+                countY = RandomValue(5, 6);
+                countZ = RandomValue(5, 6);
+            }
+            else
+            {
+                countX = RandomValue(6, 8);
+                countY = RandomValue(6, 8);
+                countZ = RandomValue(6, 8);
+            }
+
+            levelTarget = countX * countY * countZ;
+
+            if (levelTarget >= 150)
+                spellAmount = 2;
+            else spellAmount = 1;
+        }
+
+        public int RandomValue(int start, int end)
+        {
+            return Random.Range(start, end);
+        }
+
+
+        public void CheckWin()
+        {
+            if(levelTarget <= 0)
+                isWin = true;
+            if (isWin)
+            {
+                GameSceneManager.Instance.popupWin.SetActive(true);
+                currentLevel++;
+                isWin = false;
+            }
+            else return;
+        }
+
+
+    }
 
 }
