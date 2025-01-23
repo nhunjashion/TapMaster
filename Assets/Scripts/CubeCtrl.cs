@@ -15,6 +15,10 @@ namespace TapMaster
     {
         public static CubeCtrl Instance { get; private set; }
 
+
+        [SerializeField] AudioSource audioSource;
+        [SerializeField] AudioClip castSpellSfx;
+
         [Header("Field inf")]
         [SerializeField] float spacing = .5f;
         [SerializeField] int countX;
@@ -41,10 +45,17 @@ namespace TapMaster
 
         [Header("Fx")]
         [SerializeField] ParticleSystem hideFx;
+
+
+        public static event Action OnClickCube;
+
+
         private void Start()
         {
             isSpellReady = false;
             Instance = this;
+            GameSceneManager.OnClickSpell += CastSpell;
+            GameSceneManager.OnClickCancelSpell += CancelSpell;
             //SpawnCube();
         }
 
@@ -386,19 +397,6 @@ namespace TapMaster
         public bool spellCount;
         public bool isSpellReady = false;
 
-        public void OnClickDelete()
-        {
-            if(LevelManager.Instance.SpellAmount <= 0)
-                GameSceneManager.Instance.deleteBtn.interactable = false;
-            else
-                isSpellReady = true;
-            Debug.Log("use spell");
-        }
-
-
-
-
-
 
         public void ResetDir(CubeObj cubeStart)
         {
@@ -728,6 +726,8 @@ namespace TapMaster
             {
                 isSpellReady = false;
                 cubeSelect.gameObject.SetActive(false);
+                audioSource.PlayOneShot(castSpellSfx, .5f);
+                GameSceneManager.Instance.SelectUI.SetActive(false);
                 var eff = Instantiate(hideFx,cubeSelect.transform.position,Quaternion.identity);
                 cubeSelect.GetComponent<BoxCollider>().enabled = !enabled;
                 LevelManager.Instance.LevelTarget -= 1;
@@ -742,6 +742,7 @@ namespace TapMaster
                     LevelManager.Instance.SpellAmount--;
                     LevelManager.Instance.SetTextSpellAmount();
                 }
+
             }
             else
             {
@@ -751,6 +752,7 @@ namespace TapMaster
                 }
                 else
                 {
+                    OnClickCube?.Invoke();
                     cubeSelect.rb.isKinematic = false;
                     cubeSelect.GetComponent<Rigidbody>().AddForce(dir*speed);
                     cubeSelect.GetComponent<BoxCollider>().enabled = !enabled;
@@ -761,6 +763,15 @@ namespace TapMaster
                 }
             }
 
+        }
+        public void CastSpell()
+        {
+            isSpellReady = true;
+        }
+
+        public void CancelSpell()
+        {
+            isSpellReady = false;
         }
     }
 

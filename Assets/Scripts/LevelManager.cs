@@ -58,14 +58,18 @@ namespace TapMaster
             SetTextSpellAmount();
         }
 
-
         public void ResetMap()
         {
             levelTarget = countX * countY * countZ;
 
-            if (levelTarget >= 150)
+            if (levelTarget >= 343)
+                spellAmount = 4;
+            else if (levelTarget >= 216)
+                spellAmount = 3;
+            else if (levelTarget >= 150)
                 spellAmount = 2;
             else spellAmount = 1;
+            GameSceneManager.Instance.deleteBtn.interactable = true;
             CubeCtrl.Instance.ResetMap();
             SetTextSpellAmount();
         }
@@ -105,7 +109,11 @@ namespace TapMaster
 
             levelTarget = countX * countY * countZ;
 
-            if (levelTarget >= 150)
+            if (levelTarget >= 343)
+                spellAmount = 4;
+            else if (levelTarget >= 216)
+                spellAmount = 3;
+            else if (levelTarget >= 150)
                 spellAmount = 2;
             else spellAmount = 1;
         }
