@@ -73,15 +73,10 @@ namespace TapMaster
                 {
                     for (int z = 0; z < countY; z++)
                     {
-                        CubeObj item = Instantiate(cubePrefab, field,true); 
-                        item.posX = j - j*spacing;
-                        item.posY = z  - z*spacing;
-                        item.posZ = i  - i* spacing;
-                        item.SetPosition();
-                        item.ID = index;
-                        item.name = item.ID.ToString();
+                        CubeObj item = Instantiate(cubePrefab, field,true);
+                        item.SetPosition(new Vector3(j - j*spacing, z  - z*spacing, i  - i* spacing), index);
+                        item.name = index.ToString();
                         listCube.Add(item);
-                        listTest.Add(item);
                         index++;
                     }
                 }
@@ -91,19 +86,6 @@ namespace TapMaster
 
             Vector3 newDir = (listCube[0].gameObject.transform.position + listCube[listCube.Count -1].transform.position)/2;
             camTarget.position = newDir;
-
-
-
-    /*
-            foreach (CubeObj item in listCube)
-            {
-                // 
-                line.Clear();
-                startCube = item;
-                CheckLine(item);
-            }*/
-
-        
 
             foreach (var item in listCube)
             {
@@ -129,6 +111,23 @@ namespace TapMaster
 
           //  FindLine();
 
+
+
+
+            foreach (CubeObj item in listCube)
+            {
+                listTest.Add(item);
+            }
+
+        }
+
+        public void ResetMap()
+        {
+            for (int i = 0; i < field.childCount; i++)
+            {
+                CubeObj item = field.GetChild(i).GetComponent<CubeObj>();
+                item.ResetCube();
+            }
         }
 
 
@@ -202,7 +201,7 @@ namespace TapMaster
             switch (dir)
             {
                 case CubeDirection.Up:
-                    foreach(var item in listCube) if (item.posX == cube.posX && item.posZ == cube.posZ)
+                    foreach(var item in listCube) if (item.cube.Up == cube.cube.Up)
                     {
                             if(item.direction == cube.directionCounter)
                                 cube.SetDirection(item.direction);
@@ -210,7 +209,7 @@ namespace TapMaster
                     break;
 
                 case CubeDirection.Left:
-                    foreach (var item in listCube) if (item.posY == cube.posY && item.posZ == cube.posZ)
+                    foreach (var item in listCube) if (item.cube.Left == cube.cube.Left)
                     {
                             if (item.direction == cube.directionCounter)
                                 cube.SetDirection(item.direction);
@@ -218,7 +217,7 @@ namespace TapMaster
                     break;
 
                 case CubeDirection.Front:
-                    foreach (var item in listCube) if (item.posX == cube.posX && item.posY == cube.posY)
+                    foreach (var item in listCube) if (item.cube.Front == cube.cube.Front)
                     {
                             if (item.direction == cube.directionCounter)
                                 cube.SetDirection(item.direction);
@@ -232,9 +231,9 @@ namespace TapMaster
         {
             List<CubeObj> listCubeNei = new();
 
-            float x = itemParent.posX;
-            float y = itemParent.posY;
-            float z = itemParent.posZ;
+            float x = itemParent.cube.posX;
+            float y = itemParent.cube.posY;
+            float z = itemParent.cube.posZ;
 
             listCubeNei.Add(GetBlockByXYZ(x, y + 1, z)); 
             listCubeNei.Add(GetBlockByXYZ(x + 1, y, z)); 
@@ -270,7 +269,7 @@ namespace TapMaster
             CubeObj blockNeighbor = null;
             foreach (CubeObj block in this.listCube)
             {
-                if (block.posX == x && block.posY == y && block.posZ == z) blockNeighbor = block;
+                if (block.cube.posX == x && block.cube.posY == y && block.cube.posZ == z) blockNeighbor = block;
                 else if (x < 0 || x > countX - 1 || y < 0 || y > countY - 1 || z < 0 || z > countZ -1)
                     blockNeighbor = null;
             }
@@ -451,27 +450,27 @@ namespace TapMaster
                     flat1 = GetCubesOnFlat(cubeStart, Axis.y);
                     flat2 = GetCubesOnFlat(cubeStart, Axis.x);
 
-                    foreach (var item in flat1) if (item.posY > cubeStart.posY)
+                    foreach (var item in flat1) if (item.cube.posY > cubeStart.cube.posY)
                         {
                             node1 = CubeNode(cubeStart, item, Axis.y);
                             node2 = CubeNode(item, cubeStart, Axis.y);
 
                             if (node1.direction == node2.directionCounter
-                                && ((node1.direction == CubeDirection.Front && item.posZ < cubeStart.posZ)
-                                    || (node1.direction == CubeDirection.Back && item.posZ > cubeStart.posZ)))
+                                && ((node1.direction == CubeDirection.Front && item.cube.posZ < cubeStart.cube.posZ)
+                                    || (node1.direction == CubeDirection.Back && item.cube.posZ > cubeStart.cube.posZ)))
                             {
                                 node1.SetDirection(cubeStart.direction);
                             }
                         }
 
-                    foreach (var item in flat2) if (item.posY > cubeStart.posY)
+                    foreach (var item in flat2) if (item.cube.posY > cubeStart.cube.posY)
                         {
                             node1 = CubeNode(cubeStart, item, Axis.x);
                             node2 = CubeNode(item, cubeStart, Axis.x);
                             ///////////
                             if (node1.direction == node2.directionCounter
-                                && ((node1.direction == CubeDirection.Left && item.posX > cubeStart.posX)
-                                    || (node1.direction == CubeDirection.Right && item.posX < cubeStart.posX)))
+                                && ((node1.direction == CubeDirection.Left && item.cube.posX > cubeStart.cube.posX)
+                                    || (node1.direction == CubeDirection.Right && item.cube.posX < cubeStart.cube.posX)))
                             {
                                 node1.SetDirection(cubeStart.direction);
                             }
@@ -482,27 +481,27 @@ namespace TapMaster
                     flat1 = GetCubesOnFlat(cubeStart, Axis.y);
                     flat2 = GetCubesOnFlat(cubeStart, Axis.x);
 
-                    foreach (var item in flat1) if (item.posY < cubeStart.posY)
+                    foreach (var item in flat1) if (item.cube.posY < cubeStart.cube.posY)
                         {
                             node1 = CubeNode(cubeStart, item, Axis.y);
                             node2 = CubeNode(item, cubeStart, Axis.y);
 
                             if (node1.direction == node2.directionCounter
-                                && ((node1.direction == CubeDirection.Front && item.posZ > cubeStart.posZ)
-                                    || (node1.direction == CubeDirection.Back && item.posZ < cubeStart.posZ)))
+                                && ((node1.direction == CubeDirection.Front && item.cube.posZ > cubeStart.cube.posZ)
+                                    || (node1.direction == CubeDirection.Back && item.cube.posZ < cubeStart.cube.posZ)))
                             {
                                 node1.SetDirection(cubeStart.direction);
                             }
                         }
                
-                    foreach (var item in flat2) if (item.posY < cubeStart.posY)
+                    foreach (var item in flat2) if (item.cube.posY < cubeStart.cube.posY)
                         {
                             node1 = CubeNode(cubeStart, item, Axis.x);
                             node2 = CubeNode(item, cubeStart, Axis.x);
                             ///////////
                             if (node1.direction == node2.directionCounter
-                                && ((node1.direction == CubeDirection.Left && item.posX < cubeStart.posX)
-                                    || (node1.direction == CubeDirection.Right && item.posX > cubeStart.posX)))
+                                && ((node1.direction == CubeDirection.Left && item.cube.posX < cubeStart.cube.posX)
+                                    || (node1.direction == CubeDirection.Right && item.cube.posX > cubeStart.cube.posX)))
                             {
                                 node1.SetDirection(cubeStart.direction);
                             }
@@ -514,27 +513,27 @@ namespace TapMaster
                     flat1 = GetCubesOnFlat(cubeStart, Axis.z);
                     flat2 = GetCubesOnFlat(cubeStart, Axis.x);
 
-                    foreach (var item in flat1) if (item.posX < cubeStart.posX)
+                    foreach (var item in flat1) if (item.cube.posX < cubeStart.cube.posX)
                         {
                             node1 = CubeNode(cubeStart, item, Axis.z);
                             node2 = CubeNode(item, cubeStart, Axis.z);
 
                             if (node1.direction == node2.directionCounter
-                                && ((node1.direction == CubeDirection.Front && item.posZ < cubeStart.posZ)
-                                    || (node1.direction == CubeDirection.Back && item.posZ > cubeStart.posZ)))
+                                && ((node1.direction == CubeDirection.Front && item.cube.posZ < cubeStart.cube.posZ)
+                                    || (node1.direction == CubeDirection.Back && item.cube.posZ > cubeStart.cube.posZ)))
                             {
                                 node1.SetDirection(cubeStart.direction);
                             }
                         }
 
-                    foreach (var item in flat2) if (item.posX > cubeStart.posX)
+                    foreach (var item in flat2) if (item.cube.posX > cubeStart.cube.posX)
                         {
                             node1 = CubeNode(cubeStart, item, Axis.x);
                             node2 = CubeNode(item, cubeStart, Axis.x);
 
                             if (node1.direction == node2.directionCounter
-                                && ((node1.direction == CubeDirection.Down && item.posY > cubeStart.posY)
-                                    || (node1.direction == CubeDirection.Up && item.posY < cubeStart.posY)))
+                                && ((node1.direction == CubeDirection.Down && item.cube.posY > cubeStart.cube.posY)
+                                    || (node1.direction == CubeDirection.Up && item.cube.posY < cubeStart.cube.posY)))
                             {
                                 node2.SetDirection(item.direction);
                             }
@@ -545,27 +544,27 @@ namespace TapMaster
                     flat1 = GetCubesOnFlat(cubeStart, Axis.z);
                     flat2 = GetCubesOnFlat(cubeStart, Axis.x);
 
-                    foreach (var item in flat1) if (item.posX > cubeStart.posX)
+                    foreach (var item in flat1) if (item.cube.posX > cubeStart.cube.posX)
                         {
                             node1 = CubeNode(cubeStart, item, Axis.z);
                             node2 = CubeNode(item, cubeStart, Axis.z);
 
                             if (node1.direction == node2.directionCounter
-                                && ((node1.direction == CubeDirection.Front && item.posZ > cubeStart.posZ)
-                                    || (node1.direction == CubeDirection.Back && item.posZ < cubeStart.posZ)))
+                                && ((node1.direction == CubeDirection.Front && item.cube.posZ > cubeStart.cube.posZ)
+                                    || (node1.direction == CubeDirection.Back && item.cube.posZ < cubeStart.cube.posZ)))
                             {
                                 node1.SetDirection(cubeStart.direction);
                             }
                         }
 
-                    foreach (var item in flat2) if (item.posX < cubeStart.posX)
+                    foreach (var item in flat2) if (item.cube.posX < cubeStart.cube.posX)
                         {
                             node1 = CubeNode(cubeStart, item, Axis.x);
                             node2 = CubeNode(item, cubeStart, Axis.x);
 
                             if (node1.direction == node2.directionCounter
-                                && ((node1.direction == CubeDirection.Down && item.posY < cubeStart.posY)
-                                    || (node1.direction == CubeDirection.Up && item.posY > cubeStart.posY)))
+                                && ((node1.direction == CubeDirection.Down && item.cube.posY < cubeStart.cube.posY)
+                                    || (node1.direction == CubeDirection.Up && item.cube.posY > cubeStart.cube.posY)))
                             {
                                 node2.SetDirection(item.direction);
                             }
@@ -577,27 +576,27 @@ namespace TapMaster
                     flat1 = GetCubesOnFlat(cubeStart, Axis.y);
                     flat2 = GetCubesOnFlat(cubeStart, Axis.z);
 
-                    foreach (var item in flat1) if (item.posZ > cubeStart.posZ)
+                    foreach (var item in flat1) if (item.cube.posZ > cubeStart.cube.posZ)
                     {
                         node1 = CubeNode(cubeStart, item, Axis.y);
                         node2 = CubeNode(item, cubeStart, Axis.y);
                          
                         if(node1.direction == node2.directionCounter
-                            &&((node1.direction == CubeDirection.Up && item.posY < cubeStart.posY) 
-                                ||(node1.direction == CubeDirection.Down && item.posY > cubeStart.posY)))
+                            &&((node1.direction == CubeDirection.Up && item.cube.posY < cubeStart.cube.posY) 
+                                ||(node1.direction == CubeDirection.Down && item.cube.posY > cubeStart.cube.posY)))
                         {
                                 node1.SetDirection(cubeStart.direction);
                         }
                     }
 
-                    foreach (var item in flat2) if (item.posZ > cubeStart.posZ)
+                    foreach (var item in flat2) if (item.cube.posZ > cubeStart.cube.posZ)
                     {
                         node1 = CubeNode(cubeStart, item, Axis.z);
                         node2 = CubeNode(item, cubeStart, Axis.z);
 
                         if (node1.direction == node2.directionCounter
-                            &&((node1.direction == CubeDirection.Right && item.posX > cubeStart.posX) 
-                                || (node1.direction == CubeDirection.Left && item.posX < cubeStart.posX)))
+                            &&((node1.direction == CubeDirection.Right && item.cube.posX > cubeStart.cube.posX) 
+                                || (node1.direction == CubeDirection.Left && item.cube.posX < cubeStart.cube.posX)))
                         {
                                 node2.SetDirection(item.direction);
                         }
@@ -608,27 +607,27 @@ namespace TapMaster
                     flat1 = GetCubesOnFlat(cubeStart, Axis.y);
                     flat2 = GetCubesOnFlat(cubeStart, Axis.z);
 
-                    foreach (var item in flat1) if (item.posZ < cubeStart.posZ)
+                    foreach (var item in flat1) if (item.cube.posZ < cubeStart.cube.posZ)
                     {
                         node1 = CubeNode(cubeStart, item, Axis.y);
                         node2 = CubeNode(item, cubeStart, Axis.y);
                          
                         if(node1.direction == node2.directionCounter
-                            &&((node1.direction == CubeDirection.Up && item.posY < cubeStart.posY) 
-                                ||(node1.direction == CubeDirection.Down && item.posY > cubeStart.posY)))
+                            &&((node1.direction == CubeDirection.Up && item.cube.posY < cubeStart.cube.posY) 
+                                ||(node1.direction == CubeDirection.Down && item.cube.posY > cubeStart.cube.posY)))
                         {
                                 node1.SetDirection(item.direction);
                         }
                     }
 
-                    foreach (var item in flat2) if (item.posZ < cubeStart.posZ)
+                    foreach (var item in flat2) if (item.cube.posZ < cubeStart.cube.posZ)
                     {
                         node1 = CubeNode(cubeStart, item, Axis.z);
                         node2 = CubeNode(item, cubeStart, Axis.z);
 
                         if (node1.direction == node2.directionCounter
-                            &&((node1.direction == CubeDirection.Right && item.posX < cubeStart.posX) 
-                                || (node1.direction == CubeDirection.Left && item.posX > cubeStart.posX)))
+                            &&((node1.direction == CubeDirection.Right && item.cube.posX < cubeStart.cube.posX) 
+                                || (node1.direction == CubeDirection.Left && item.cube.posX > cubeStart.cube.posX)))
                         {
                                 node2.SetDirection(item.direction);
                         }
@@ -645,19 +644,19 @@ namespace TapMaster
             switch (axis)
             {
                 case Axis.x:
-                    foreach (var item in listCube) if (item.posZ == cube.posZ && item.directionCounter == cube.direction)
+                    foreach (var item in listCube) if (item.cube.posZ == cube.cube.posZ && item.directionCounter == cube.direction)
                         {
                             cubeResult.Add(item);
                         }
                     break;
                 case Axis.y:
-                    foreach (var item in listCube) if (item.posX == cube.posX && item.posZ == cube.posZ && item.directionCounter == cube.direction)
+                    foreach (var item in listCube) if (item.cube.posX == cube.cube.posX && item.cube.posZ == cube.cube.posZ && item.directionCounter == cube.direction)
                         {
                             cubeResult.Add(item);
                         }
                     break;
                 case Axis.z:
-                    foreach (var item in listCube) if (item.posZ == cube.posZ && item.posY == cube.posY && item.directionCounter == cube.direction)
+                    foreach (var item in listCube) if (item.cube.posZ == cube.cube.posZ && item.cube.posY == cube.cube.posY && item.directionCounter == cube.direction)
                         {
                             cubeResult.Add(item);
                         }
@@ -681,13 +680,13 @@ namespace TapMaster
             switch (axis)
             {
                 case Axis.x:
-                    result = listCube.Find(x => x.posX == cube1.posX && x.posY == cube2.posY);
+                    result = listCube.Find(x => x.cube.Front == cube1.cube.Front);
                     break;
                 case Axis.y:
-                    result = listCube.Find(x => x.posZ == cube1.posZ && x.posY == cube2.posY);
+                    result = listCube.Find(x => x.cube.Left == cube1.cube.Left);
                     break;
                 case Axis.z:
-                    result = listCube.Find(x => x.posX == cube1.posX && x.posZ == cube2.posZ);
+                    result = listCube.Find(x => x.cube.Left == cube1.cube.Left);
                     break;
             }
             return result;

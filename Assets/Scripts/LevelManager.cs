@@ -66,7 +66,7 @@ namespace TapMaster
             if (levelTarget >= 150)
                 spellAmount = 2;
             else spellAmount = 1;
-            CubeCtrl.Instance.SpawnCube();
+            CubeCtrl.Instance.ResetMap();
             SetTextSpellAmount();
         }
 
